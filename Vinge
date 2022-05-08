@@ -276,7 +276,7 @@ echo "" >> data/log/searchByNick/searchByNick.md;
 #vk
 siteName="vk"; url="vk.com/"; siteError='HTTP/2 404'; nickExist;
 #facebook
-siteName="facebook"; url="www.facebook.com/"; siteError='not found'; nickExist;
+#siteName="facebook"; url="www.facebook.com/"; siteError='not found'; nickExist;
 #youtube
 siteName="youtube"; url="www.youtube.com/"; siteError='Not Found'; nickExist;
 #steam
